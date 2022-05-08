@@ -36,6 +36,7 @@ type SetupEnvironmentSpec struct {
 type SetupEnvironmentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes,omitempty"`
 }
 
 //+kubebuilder:object:root=true

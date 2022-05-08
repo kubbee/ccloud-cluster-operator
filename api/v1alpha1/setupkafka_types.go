@@ -29,13 +29,26 @@ type SetupKafkaSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of SetupKafka. Edit setupkafka_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Cloud                    string                   `json:"cloud,omitempty"`
+	Region                   string                   `json:"region,omitempty"`
+	Availability             string                   `json:"availability,omitempty"`
+	Type                     string                   `json:"type,omitempty"`
+	CKU                      string                   `json:"cku,omitempty"`
+	EncryptionKey            string                   `json:"encryptionKey,omitempty"`
+	Context                  string                   `json:"context,omitempty"`
+	EnvironmentReferenceSpec EnvironmentReferenceSpec `json:"environmentReferenceSpec,omitempty"`
+}
+
+// EnvironmentReferenceSpec defines the desired state of SetupKafka
+type EnvironmentReferenceSpec struct {
+	Environment string `json:"environment,omitempty"`
 }
 
 // SetupKafkaStatus defines the observed state of SetupKafka
 type SetupKafkaStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes,omitempty"`
 }
 
 //+kubebuilder:object:root=true

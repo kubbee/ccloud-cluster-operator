@@ -31,3 +31,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - setupkafkas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - setupkafkas/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - setupkafkas/status
+  verbs:
+  - get
+  - patch
+  - update

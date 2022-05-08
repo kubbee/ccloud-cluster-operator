@@ -5,20 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
-  name: setupenvironments.messages.kubbee.tech
+  name: setupkafkas.messages.kubbee.tech
 spec:
   group: messages.kubbee.tech
   names:
-    kind: SetupEnvironment
-    listKind: SetupEnvironmentList
-    plural: setupenvironments
-    singular: setupenvironment
+    kind: SetupKafka
+    listKind: SetupKafkaList
+    plural: setupkafkas
+    singular: setupkafka
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: SetupEnvironment is the Schema for the setupenvironments API
+        description: SetupKafka is the Schema for the setupkafkas API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,15 +33,34 @@ spec:
           metadata:
             type: object
           spec:
-            description: SetupEnvironmentSpec defines the desired state of SetupEnvironment
+            description: SetupKafkaSpec defines the desired state of SetupKafka
             properties:
-              environment:
-                description: Foo is an example field of SetupEnvironment. Edit setupenvironment_types.go
+              availability:
+                type: string
+              cku:
+                type: string
+              cloud:
+                description: Foo is an example field of SetupKafka. Edit setupkafka_types.go
                   to remove/update
+                type: string
+              context:
+                type: string
+              encryptionKey:
+                type: string
+              environmentReferenceSpec:
+                description: EnvironmentReferenceSpec defines the desired state of
+                  SetupKafka
+                properties:
+                  environment:
+                    type: string
+                type: object
+              region:
+                type: string
+              type:
                 type: string
             type: object
           status:
-            description: SetupEnvironmentStatus defines the observed state of SetupEnvironment
+            description: SetupKafkaStatus defines the observed state of SetupKafka
             properties:
               nodes:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
