@@ -1,0 +1,24 @@
+# permissions for end users to edit setupkafkas.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: setupkafka-editor-role
+rules:
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - setupkafkas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - setupkafkas/status
+  verbs:
+  - get
