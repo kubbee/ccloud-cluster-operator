@@ -13,7 +13,7 @@ resources:
   controller: true
   domain: kubbee.tech
   group: messages
-  kind: SetupEnvironment
+  kind: CCloudEnvironment
   path: github.com/kubbee/ccloud-cluster-operator/api/v1alpha1
   version: v1alpha1
 - api:
@@ -22,7 +22,16 @@ resources:
   controller: true
   domain: kubbee.tech
   group: messages
-  kind: SetupKafka
+  kind: CCloudKafka
+  path: github.com/kubbee/ccloud-cluster-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubbee.tech
+  group: messages
+  kind: CCloudSchemaRegistry
   path: github.com/kubbee/ccloud-cluster-operator/api/v1alpha1
   version: v1alpha1
 version: "3"

@@ -1,0 +1,6 @@
+apiVersion: messages.kubbee.tech/v1alpha1
+kind: CCloudKafka
+metadata:
+  name: ccloudkafka-sample
+spec:
+  # TODO(user): Add fields here

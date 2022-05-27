@@ -78,18 +78,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.SetupEnvironmentReconciler{
+	if err = (&controllers.CCloudEnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "SetupEnvironment")
+		setupLog.Error(err, "unable to create controller", "controller", "CCloudEnvironment")
 		os.Exit(1)
 	}
-	if err = (&controllers.SetupKafkaReconciler{
+	if err = (&controllers.CCloudKafkaReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "SetupKafka")
+		setupLog.Error(err, "unable to create controller", "controller", "CCloudKafka")
+		os.Exit(1)
+	}
+	if err = (&controllers.CCloudSchemaRegistryReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CCloudSchemaRegistry")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

@@ -1,0 +1,101 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: ccloudkafkas.messages.kubbee.tech
+spec:
+  group: messages.kubbee.tech
+  names:
+    kind: CCloudKafka
+    listKind: CCloudKafkaList
+    plural: ccloudkafkas
+    singular: ccloudkafka
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CCloudKafka is the Schema for the ccloudkafkas API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CCloudKafkaSpec defines the desired state of CCloudKafka
+            properties:
+              availability:
+                type: string
+              ccloudKafkaDedicate:
+                properties:
+                  cku:
+                    format: int64
+                    type: integer
+                type: object
+              cloud:
+                type: string
+              clusterType:
+                type: string
+              environment:
+                type: string
+              region:
+                type: string
+            type: object
+          status:
+            description: CCloudKafkaStatus defines the observed state of CCloudKafka
+            properties:
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      description: The last time this Condition status changed.
+                      format: date-time
+                      type: string
+                    message:
+                      description: Full text reason for current status of the condition.
+                      type: string
+                    reason:
+                      description: One word, camel-case reason for current status
+                        of the condition.
+                      type: string
+                    status:
+                      description: True, False, or Unknown
+                      type: string
+                    type:
+                      description: Type indicates the scope of the custom resource
+                        status addressed by the condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              observedGeneration:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

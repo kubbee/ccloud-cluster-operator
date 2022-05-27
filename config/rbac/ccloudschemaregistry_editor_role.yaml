@@ -1,0 +1,24 @@
+# permissions for end users to edit ccloudschemaregistries.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ccloudschemaregistry-editor-role
+rules:
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries/status
+  verbs:
+  - get

@@ -1,0 +1,20 @@
+# permissions for end users to view ccloudschemaregistries.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ccloudschemaregistry-viewer-role
+rules:
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries/status
+  verbs:
+  - get

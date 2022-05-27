@@ -8,7 +8,7 @@ rules:
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupenvironments
+  - ccloudenvironments
   verbs:
   - create
   - delete
@@ -20,13 +20,13 @@ rules:
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupenvironments/finalizers
+  - ccloudenvironments/finalizers
   verbs:
   - update
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupenvironments/status
+  - ccloudenvironments/status
   verbs:
   - get
   - patch
@@ -34,7 +34,7 @@ rules:
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupkafkas
+  - ccloudkafkas
   verbs:
   - create
   - delete
@@ -46,13 +46,39 @@ rules:
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupkafkas/finalizers
+  - ccloudkafkas/finalizers
   verbs:
   - update
 - apiGroups:
   - messages.kubbee.tech
   resources:
-  - setupkafkas/status
+  - ccloudkafkas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - messages.kubbee.tech
+  resources:
+  - ccloudschemaregistries/status
   verbs:
   - get
   - patch
