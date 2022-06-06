@@ -25,16 +25,16 @@ spec:
         control-plane: controller-manager
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
       containers:
       - command:
-        - /manager
+        - /manager/runner
         args:
         - --leader-elect
-        image: controller:latest
+        image: docker.io/lhsribas/ccloud-cluster-operator:v0.1.3
         name: manager
         securityContext:
-          allowPrivilegeEscalation: false
+          allowPrivilegeEscalation: true
         livenessProbe:
           httpGet:
             path: /healthz

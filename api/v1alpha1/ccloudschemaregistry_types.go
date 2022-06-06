@@ -28,8 +28,15 @@ type CCloudSchemaRegistrySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of CCloudSchemaRegistry. Edit ccloudschemaregistry_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Cloud                        string                       `json:"cloud,omitempty"`
+	Geo                          string                       `json:"geo,omitempty"`
+	Environment                  string                       `json:"environment,omitempty"`
+	ApiKeyName                   string                       `json:"apiKeyName,omitempty"`
+	CCloudSchemaRegistryResource CCloudSchemaRegistryResource `json:"schemaRegistryResource,omitempty"`
+}
+
+type CCloudSchemaRegistryResource struct {
+	ResourceExist bool `json:"resourceExist,omitempty"`
 }
 
 // CCloudSchemaRegistryStatus defines the observed state of CCloudSchemaRegistry

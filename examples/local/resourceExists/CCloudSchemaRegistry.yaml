@@ -1,0 +1,11 @@
+apiVersion: messages.kubbee.tech/v1alpha1
+kind: CCloudSchemaRegistry
+metadata:
+  name: ccloudschemaregistry-sample
+spec:
+  cloud: aws
+  geo: us
+  environment: teklon
+  apiKeyName: teklon
+  schemaRegistryResource:
+    resourceExist: false

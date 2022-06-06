@@ -19,7 +19,9 @@ package controllers
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,7 +29,11 @@ import (
 
 	"github.com/go-logr/logr"
 	messagesv1alpha1 "github.com/kubbee/ccloud-cluster-operator/api/v1alpha1"
+	util "github.com/kubbee/ccloud-cluster-operator/internal"
 	services "github.com/kubbee/ccloud-cluster-operator/services"
+
+	corev1 "k8s.io/api/core/v1"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 // CCloudEnvironmentReconciler reconciles a CCloudEnvironment object
@@ -54,29 +60,81 @@ type CCloudEnvironmentReconciler struct {
 func (r *CCloudEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
 
-	environment := &messagesv1alpha1.CCloudEnvironment{}
+	ccloudEnvironment := &messagesv1alpha1.CCloudEnvironment{}
 
-	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
-		return reconcile.Result{}, client.IgnoreNotFound(err)
+	if err := r.Get(ctx, req.NamespacedName, ccloudEnvironment); err != nil {
+		if k8sErrors.IsNotFound(err) {
+			logger.Info("KafkaResource Not Found.")
+
+			if !ccloudEnvironment.ObjectMeta.DeletionTimestamp.IsZero() {
+				logger.Info("Was marked for deletion.")
+				return reconcile.Result{}, nil // implementing the nil in the future
+			}
+		}
+		return reconcile.Result{}, err
 	}
 
-	if !environment.ObjectMeta.DeletionTimestamp.IsZero() {
-		logger.Info("Deleting")
-		return reconcile.Result{}, nil // implementing the nil in the future
+	foundSecret := &corev1.Secret{}
+	err := r.Get(ctx, types.NamespacedName{Name: ccloudEnvironment.Name, Namespace: req.Namespace}, foundSecret)
+
+	if err != nil && k8sErrors.IsNotFound(err) {
+
+		logger.Info("call method to create the environment.")
+		return r.declareEnvironment(ctx, req, ccloudEnvironment)
 	}
 
-	return r.declareEnvironment(ctx, req, environment)
+	return reconcile.Result{}, nil
 }
 
+/*
+ *
+ */
 func (r *CCloudEnvironmentReconciler) declareEnvironment(ctx context.Context, req ctrl.Request, environment *messagesv1alpha1.CCloudEnvironment) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
 
-	if _, err := services.CreateEnvironment(environment, &logger); err != nil {
+	if environment, err := services.BuildEnvironment(environment, &logger); err != nil {
 		logger.Error(err, "Error to create environment")
 		return reconcile.Result{}, err
 	} else {
+
+		secret, _ := r.declareEnvironmentSecret(ctx, req, environment)
+		err := r.Create(ctx, secret)
+
+		//
+		if err != nil {
+			logger.Error(err, "error to create environment secret")
+			return reconcile.Result{}, nil
+		}
+
 		return reconcile.Result{}, nil
 	}
+}
+
+/*
+ *
+ */
+func (r *CCloudEnvironmentReconciler) declareEnvironmentSecret(ctx context.Context, req ctrl.Request, environment *util.Environment) (*corev1.Secret, error) {
+	logger := ctrl.LoggerFrom(ctx)
+	logger.Info("Start::declareEnvironmentSecret")
+
+	var labels = make(map[string]string)
+	labels["name"] = environment.Name
+	labels["owner"] = "ccloud-messaging-topology-operator"
+	labels["controller"] = "ccloudenvironment_controller"
+
+	var immutable bool = true
+
+	// create and return secret object.
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      environment.Name,
+			Namespace: req.Namespace,
+			Labels:    labels,
+		},
+		Type:      "kubbee.tech/secret",
+		Data:      map[string][]byte{"environmentName": []byte(environment.Name), "environmentId": []byte(environment.Id)},
+		Immutable: &immutable,
+	}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

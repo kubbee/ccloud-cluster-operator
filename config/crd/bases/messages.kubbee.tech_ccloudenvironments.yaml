@@ -35,9 +35,12 @@ spec:
           spec:
             description: CCloudEnvironmentSpec defines the desired state of CCloudEnvironment
             properties:
+              environmentResource:
+                properties:
+                  resourceExist:
+                    type: boolean
+                type: object
               name:
-                description: Foo is an example field of CCloudEnvironment. Edit ccloudenvironment_types.go
-                  to remove/update
                 type: string
             type: object
           status:

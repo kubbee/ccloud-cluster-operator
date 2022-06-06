@@ -28,16 +28,24 @@ type CCloudKafkaSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	ClusterName         string              `json:"clusterName,omitempty"`
 	Cloud               string              `json:"cloud,omitempty"`
 	Region              string              `json:"region,omitempty"`
 	Availability        string              `json:"availability,omitempty"` //--availability string     Availability of the cluster. Allowed Values: single-zone, multi-zone. (default "single-zone")
 	ClusterType         string              `json:"clusterType,omitempty"`  // --type string             Type of the Kafka cluster. Allowed values: basic, standard, dedicated. (default "basic")
 	Environment         string              `json:"environment,omitempty"`
+	ApiKeyName          string              `json:"apiKeyName,omitempty"`
 	CCloudKafkaDedicate CCloudKafkaDedicate `json:"ccloudKafkaDedicate,omitempty"`
+	CCloudKafkaResource CCloudKafkaResource `json:"kafkaResource,omitempty"`
+}
+
+type CCloudKafkaResource struct {
+	ResourceExist bool `json:"resourceExist,omitempty"`
 }
 
 type CCloudKafkaDedicate struct {
-	CKU int64 `json:"cku,omitempty"`
+	Dedicated bool  `json:"dedicated,omitempty"`
+	CKU       int64 `json:"cku,omitempty"`
 }
 
 // CCloudKafkaStatus defines the observed state of CCloudKafka

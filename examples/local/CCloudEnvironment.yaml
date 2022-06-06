@@ -1,0 +1,8 @@
+apiVersion: messages.kubbee.tech/v1alpha1
+kind: CCloudEnvironment
+metadata:
+  name: ccloudenvironment-kubbee
+spec:
+  name: kubbee
+  environmentResource:
+    resourceExist: false

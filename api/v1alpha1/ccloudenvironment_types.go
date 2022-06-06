@@ -28,8 +28,13 @@ type CCloudEnvironmentSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of CCloudEnvironment. Edit ccloudenvironment_types.go to remove/update
-	Name string `json:"name,omitempty"`
+	Name                      string                    `json:"name,omitempty"`
+	CCloudEnvironmentResource CCloudEnvironmentResource `json:"environmentResource,omitempty"`
+}
+
+//
+type CCloudEnvironmentResource struct {
+	ResourceExist bool `json:"resourceExist,omitempty"`
 }
 
 // CCloudEnvironmentStatus defines the observed state of CCloudEnvironment

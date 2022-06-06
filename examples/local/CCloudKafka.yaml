@@ -1,0 +1,16 @@
+apiVersion: messages.kubbee.tech/v1alpha1
+kind: CCloudKafka
+metadata:
+  name: ccloudkafka-kubbee
+spec:
+  clusterName: dev
+  cloud: aws
+  region: us-east-1
+  availability: single-zone
+  clusterType: basic
+  environment: kubbee
+  apiKeyName: kubbee
+  ccloudKafkaDedicate:
+    dedicated: false
+  kafkaResource:
+    resourceExist: false

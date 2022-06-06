@@ -36,10 +36,19 @@ spec:
           spec:
             description: CCloudSchemaRegistrySpec defines the desired state of CCloudSchemaRegistry
             properties:
-              foo:
-                description: Foo is an example field of CCloudSchemaRegistry. Edit
-                  ccloudschemaregistry_types.go to remove/update
+              apiKeyName:
                 type: string
+              cloud:
+                type: string
+              environment:
+                type: string
+              geo:
+                type: string
+              schemaRegistryResource:
+                properties:
+                  resourceExist:
+                    type: boolean
+                type: object
             type: object
           status:
             description: CCloudSchemaRegistryStatus defines the observed state of

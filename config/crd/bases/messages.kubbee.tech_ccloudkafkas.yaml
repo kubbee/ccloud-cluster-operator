@@ -35,6 +35,8 @@ spec:
           spec:
             description: CCloudKafkaSpec defines the desired state of CCloudKafka
             properties:
+              apiKeyName:
+                type: string
               availability:
                 type: string
               ccloudKafkaDedicate:
@@ -42,13 +44,22 @@ spec:
                   cku:
                     format: int64
                     type: integer
+                  dedicated:
+                    type: boolean
                 type: object
               cloud:
+                type: string
+              clusterName:
                 type: string
               clusterType:
                 type: string
               environment:
                 type: string
+              kafkaResource:
+                properties:
+                  resourceExist:
+                    type: boolean
+                type: object
               region:
                 type: string
             type: object
