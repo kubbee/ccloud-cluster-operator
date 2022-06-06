@@ -8,8 +8,8 @@ spec:
   region: us-east-1
   availability: single-zone
   clusterType: basic
-  environment: kubbee
-  apiKeyName: kubbee
+  environment: kubbee-pay
+  apiKeyName: kubbee-pay
   ccloudKafkaDedicate:
     dedicated: false
   kafkaResource:

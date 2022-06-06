@@ -71,11 +71,17 @@ func (r *CCloudEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				return reconcile.Result{}, nil // implementing the nil in the future
 			}
 		}
-		return reconcile.Result{}, err
+		return reconcile.Result{}, nil
 	}
 
+	//definition of secret name
+	secretName := ccloudEnvironment.Spec.Name
+
+	//type definition
 	foundSecret := &corev1.Secret{}
-	err := r.Get(ctx, types.NamespacedName{Name: ccloudEnvironment.Name, Namespace: req.Namespace}, foundSecret)
+
+	// try find the secret, and if not find create call the process to declare the environment
+	err := r.Get(ctx, types.NamespacedName{Name: secretName, Namespace: req.Namespace}, foundSecret)
 
 	if err != nil && k8sErrors.IsNotFound(err) {
 
@@ -86,8 +92,8 @@ func (r *CCloudEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return reconcile.Result{}, nil
 }
 
-/*
- *
+/**
+ * This function create an environment on the confluent cloud
  */
 func (r *CCloudEnvironmentReconciler) declareEnvironment(ctx context.Context, req ctrl.Request, environment *messagesv1alpha1.CCloudEnvironment) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
@@ -110,8 +116,8 @@ func (r *CCloudEnvironmentReconciler) declareEnvironment(ctx context.Context, re
 	}
 }
 
-/*
- *
+/**
+ * This function creates an secret environment on the namespace
  */
 func (r *CCloudEnvironmentReconciler) declareEnvironmentSecret(ctx context.Context, req ctrl.Request, environment *util.Environment) (*corev1.Secret, error) {
 	logger := ctrl.LoggerFrom(ctx)

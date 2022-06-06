@@ -75,10 +75,13 @@ func (r *CCloudSchemaRegistryReconciler) Reconcile(ctx context.Context, req ctrl
 		return reconcile.Result{}, err
 	}
 
-	//Defines the name of secret
+	//definition of secret name
 	secretName := "schemaregistry-" + ccloudSchemaRegistry.Spec.Environment
 
+	//type definition
 	foundSecret := &corev1.Secret{}
+
+	// try find the secret, and if not find create call the process to declare the environment
 	err := r.Get(ctx, types.NamespacedName{Name: secretName, Namespace: req.Namespace}, foundSecret)
 
 	/*
@@ -91,7 +94,9 @@ func (r *CCloudSchemaRegistryReconciler) Reconcile(ctx context.Context, req ctrl
 	return reconcile.Result{}, nil
 }
 
-//
+/**
+ * This function is responsible to create a Schema Registry into the environment
+ */
 func (r *CCloudSchemaRegistryReconciler) declareSchemaRegistry(ctx context.Context, req ctrl.Request,
 	ccloudSR *messagesv1alpha1.CCloudSchemaRegistry) (ctrl.Result, error) {
 
@@ -127,6 +132,9 @@ func (r *CCloudSchemaRegistryReconciler) declareSchemaRegistry(ctx context.Conte
 	return reconcile.Result{}, nil
 }
 
+/**
+ * This function is responsible to create an Api-Key for the Schema Registry
+ */
 func (r *CCloudSchemaRegistryReconciler) declareSRApiKey(ctx context.Context, req ctrl.Request, apiKeyName string, schemaRegistry *util.SchemaRegistry) (*util.ApiKey, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Start::declareSchemaRegistry")
@@ -145,6 +153,9 @@ func (r *CCloudSchemaRegistryReconciler) declareSRApiKey(ctx context.Context, re
 	return apiKey, nil
 }
 
+/**
+ * This function is responsible to create a secret with the api-key and the schema registry endpoint
+ */
 func (r *CCloudSchemaRegistryReconciler) delcareSRSecret(ctx context.Context, req ctrl.Request, environment string, sr *util.SchemaRegistry, apiKey *util.ApiKey) (*corev1.Secret, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Start::declareSchemaRegistrySecret")
@@ -175,6 +186,9 @@ func (r *CCloudSchemaRegistryReconciler) delcareSRSecret(ctx context.Context, re
 	}, nil
 }
 
+/**
+ * This function is responsible to get the Environment Secret on the namespace;
+ */
 func (r *CCloudSchemaRegistryReconciler) readCredentials(ctx context.Context, requestNamespace string, secretName string) (util.ConnectionCredentials, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Read credentials from cluster")
@@ -188,6 +202,9 @@ func (r *CCloudSchemaRegistryReconciler) readCredentials(ctx context.Context, re
 	return r.readCredentialsFromKubernetesSecret(secret), nil
 }
 
+/**
+ * This function is responsible to ready the content of the secret and return for execute operations with the data
+ */
 func (r *CCloudSchemaRegistryReconciler) readCredentialsFromKubernetesSecret(secret *corev1.Secret) *util.ClusterCredentials {
 	return &util.ClusterCredentials{
 		DataContent: map[string][]byte{

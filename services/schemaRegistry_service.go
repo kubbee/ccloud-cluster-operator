@@ -11,10 +11,10 @@ import (
 )
 
 func newSR(cloud string, geo string, environmentId string, logger *logr.Logger) (*util.SchemaRegistry, error) {
-	//confluent sr cluster enable --cloud aws --geo us --environment env-9kkdnv --output json
+	//confluent schema-registry cluster enable --cloud aws --geo us --environment env-9kkdnv --output json
 	logger.Info("Start::newSchemaRegistry")
 
-	cmd := exec.Command("/bin/confluent", "sr", "cluster", "enable", "--cloud", cloud, "--geo", geo, "--environment", environmentId, "--output", "json")
+	cmd := exec.Command("/bin/confluent", "schema-registry", "cluster", "enable", "--cloud", cloud, "--geo", geo, "--environment", environmentId, "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput

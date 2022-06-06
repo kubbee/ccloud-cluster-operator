@@ -71,7 +71,7 @@ func (r *CCloudKafkaReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				return reconcile.Result{}, nil // implementing the nil in the future
 			}
 		}
-		return reconcile.Result{}, err
+		return reconcile.Result{}, nil
 	}
 
 	secretName := "kafka-" + ccloudKafka.Spec.Environment
@@ -93,21 +93,40 @@ func (r *CCloudKafkaReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	return reconcile.Result{}, nil
 }
 
+/**
+ * This function Get the Kafka Cluster Settings and verify if the cluster was provisioned, if not wait 5 secods and try again;
+ */
 func kafkaCreationStatus(id string, environmentId string, logger *logr.Logger) bool {
+	logger.Info("Start::kafkaCreationStatus")
 	logger.Info("ClusterId >>>> " + id)
+
 	if kafkaClusterSettings, ee := services.GetKafkaClusterSettings(id, environmentId, logger); ee == nil {
+
 		if kafkaClusterSettings.Status == "PROVISIONING" {
+			logger.Info("The status is PROVISIONING")
+
 			time.Sleep(5 * time.Second)
+
 			return false
 		} else {
+
+			logger.Info("The Kafka Cluster was PROVISIONED")
 			return true
 		}
+
 	} else {
 		logger.Info("Not fount the cluster yet.")
 		return false
 	}
 }
 
+/**
+ * This function creates the Kafka Cluster on the Confluent Cloud, and it is responsible do call another 2 important functions
+ *
+ * <declareKafkaApiKey>
+ * <declareKafkaSecret>
+ *
+ */
 func (r *CCloudKafkaReconciler) declareKafka(ctx context.Context, req ctrl.Request, ccloudKafka *messagesv1alpha1.CCloudKafka) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Start::declareKafka")
@@ -128,19 +147,34 @@ func (r *CCloudKafkaReconciler) declareKafka(ctx context.Context, req ctrl.Reque
 		}
 
 		for {
+			logger.Info("Check if kafka cluster are ready.")
+
 			if kafkaCreationStatus(kafka.Id, string(envId), &logger) {
+
+				logger.Info("Prepare to create Kafka Api-Key")
+				logger.Info("kafkaId >>>>>>>>>>> " + kafka.Id)
 
 				if kafkaApiKey, e := r.declareKafkaApiKey(ctx, kafka, ccloudKafka); e == nil {
 					if kafkaClusterSettings, ee := services.GetKafkaClusterSettings(kafka.Id, string(envId), &logger); ee == nil {
+
 						if secret, eee := r.declareKafkaSecret(ctx, req, ccloudKafka.Spec.Environment, kafkaClusterSettings, kafkaApiKey); eee == nil {
-							r.Create(ctx, secret)
-							break
+
+							logger.Info("Run command to create Secret")
+
+							if eeee := r.Create(ctx, secret); eeee != nil {
+								return reconcile.Result{}, eeee
+							} else {
+								return reconcile.Result{}, nil
+							}
+
 						} else {
 							return reconcile.Result{}, eee
 						}
+
 					} else {
 						return reconcile.Result{}, ee
 					}
+
 				} else {
 					return reconcile.Result{}, e
 				}
@@ -151,6 +185,9 @@ func (r *CCloudKafkaReconciler) declareKafka(ctx context.Context, req ctrl.Reque
 	return ctrl.Result{}, nil
 }
 
+/**
+ * This function creates an Api-Key for the Kafka Cluster
+ */
 func (r *CCloudKafkaReconciler) declareKafkaApiKey(ctx context.Context, kafka *util.ClusterKafka,
 	ccloudKafka *messagesv1alpha1.CCloudKafka) (*util.ApiKey, error) {
 
@@ -167,6 +204,9 @@ func (r *CCloudKafkaReconciler) declareKafkaApiKey(ctx context.Context, kafka *u
 	return kafkaApiKey, nil
 }
 
+/**
+ * This function creates a secret with Api-Key and Endpoint Kafka
+ */
 func (r *CCloudKafkaReconciler) declareKafkaSecret(ctx context.Context, req ctrl.Request, environment string,
 	kafkaClusterSettings *util.ClusterKafka, apiKey *util.ApiKey) (*corev1.Secret, error) {
 
@@ -195,6 +235,9 @@ func (r *CCloudKafkaReconciler) declareKafkaSecret(ctx context.Context, req ctrl
 	}, nil
 }
 
+/**
+ * This function is responsible to get the Environment Secret on the namespace;
+ */
 func (r *CCloudKafkaReconciler) readCredentials(ctx context.Context, requestNamespace string, secretName string) (util.ConnectionCredentials, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Read credentials from cluster")
@@ -208,6 +251,9 @@ func (r *CCloudKafkaReconciler) readCredentials(ctx context.Context, requestName
 	return r.readCredentialsFromKubernetesSecret(secret), nil
 }
 
+/**
+ * This function is responsible to ready the content of the secret and return for execute operations with the data
+ */
 func (r *CCloudKafkaReconciler) readCredentialsFromKubernetesSecret(secret *corev1.Secret) *util.ClusterCredentials {
 	return &util.ClusterCredentials{
 		DataContent: map[string][]byte{

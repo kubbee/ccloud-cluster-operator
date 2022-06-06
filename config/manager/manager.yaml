@@ -31,7 +31,7 @@ spec:
         - /manager/runner
         args:
         - --leader-elect
-        image: docker.io/lhsribas/ccloud-cluster-operator:v0.1.3
+        image: docker.io/lhsribas/ccloud-cluster-operator:v0.0.4
         name: manager
         securityContext:
           allowPrivilegeEscalation: true

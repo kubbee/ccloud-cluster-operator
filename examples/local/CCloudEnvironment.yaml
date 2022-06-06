@@ -3,6 +3,6 @@ kind: CCloudEnvironment
 metadata:
   name: ccloudenvironment-kubbee
 spec:
-  name: kubbee
+  name: kubbee-pay
   environmentResource:
     resourceExist: false

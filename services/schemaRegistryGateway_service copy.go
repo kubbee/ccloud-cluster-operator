@@ -10,12 +10,18 @@ import (
  *
  */
 func BuildSechameRegistry(ccloudSR *messagesv1alpha1.CCloudSchemaRegistry, environmentId string, logger *logr.Logger) (*util.SchemaRegistry, error) {
-	if ccloudSR.Spec.CCloudSchemaRegistryResource.ResourceExist {
-		return getSechameRegistry(environmentId, logger)
-	} else {
-		return createSechameRegistry(ccloudSR, environmentId, logger)
-	}
 
+	logger.Info("Start::BuildKafka")
+	if setEnvironment(environmentId, logger) {
+		if ccloudSR.Spec.CCloudSchemaRegistryResource.ResourceExist {
+			return getSechameRegistry(environmentId, logger)
+		} else {
+			return createSechameRegistry(ccloudSR, environmentId, logger)
+		}
+	} else {
+		logger.Info("Was not possible select the environment check the name.")
+		return &util.SchemaRegistry{}, nil
+	}
 }
 
 /*
