@@ -1,0 +1,1 @@
+# Schema Registry Custom Resource Definition

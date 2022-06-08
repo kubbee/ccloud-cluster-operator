@@ -1,0 +1,11 @@
+apiVersion: messages.kubbee.tech/v1alpha1
+kind: CCloudSchemaRegistry
+metadata:
+  name: ccloudschemaregistry-kubbee-resource-exist
+spec:
+  cloud: aws
+  geo: us
+  environment: kubbee-pay
+  apiKeyName: kubbee-pay
+  schemaRegistryResource:
+    resourceExist: true
