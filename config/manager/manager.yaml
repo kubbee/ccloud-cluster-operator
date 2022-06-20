@@ -33,11 +33,6 @@ spec:
         - --leader-elect
         image: docker.io/lhsribas/ccloud-cluster-operator:v0.0.4
         name: manager
-        env:
-          - name: CCLOUD_EMAIL
-            value: pass-your-admin-email-here
-          - name: CCLOUD_PASSWORD
-            value: pass-your-admin-password-here
         securityContext:
           allowPrivilegeEscalation: true
         livenessProbe:
