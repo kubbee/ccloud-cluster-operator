@@ -14,9 +14,6 @@ COPY go.sum go.sum
 COPY confluent/cmd/confluent /bin/confluent
 COPY confluent/script/.netrc /root
 
-RUN  sed -i -r "s/ccloudlogin/${CCLOUD_EMAIL}/g" /root/.netrc
-RUN  sed -i -r "s/ccloudpassword/${CCLOUD_PASSWORD}/g" /root/.netrc
-
 RUN go mod download
 
 COPY main.go main.go
@@ -33,7 +30,11 @@ WORKDIR /
 USER root
 
 RUN mkdir /manager
-RUN mv /workspace/runner /manager/.
-RUN chmod -R 777 /manager
+
+COPY confluent/script/setup /manager
+
+RUN mv /workspace/runner /manager
+RUN chmod 777 /manager/runner && chmod 777 /manager/setup
+
 
 CMD ["/manager/runner","-D","FOREGROUND"]

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sed -i -r "s/ccloudlogin/${CCLOUD_EMAIL}/g" /root/.netrc
+sed -i -r "s/ccloudpassword/${CCLOUD_PASSWORD}/g" /root/.netrc

@@ -1,8 +1,8 @@
 apiVersion: messages.kubbee.tech/v1alpha1
 kind: CCloudEnvironment
 metadata:
-  name: ccloudenvironment-teklon
+  name: ccloudenvironment-kubbee
 spec:
-  name: teklon
+  name: kubbee-pay
   environmentResource:
     resourceExist: true

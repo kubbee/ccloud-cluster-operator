@@ -31,8 +31,17 @@ spec:
         - /manager/runner
         args:
         - --leader-elect
-        image: docker.io/lhsribas/ccloud-cluster-operator:v0.0.4
+        image: docker.io/lhsribas/ccloud-cluster-operator:v0.0.6
         name: manager
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "/manager/setup"]
+        env:
+        - name: CCLOUD_EMAIL
+          value: put-the-email-here
+        - name: CCLOUD_PASSWORD
+          value: put-the-password-here
         securityContext:
           allowPrivilegeEscalation: true
         livenessProbe:
