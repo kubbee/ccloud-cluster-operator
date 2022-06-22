@@ -1,9 +1,6 @@
 # Build the manager binary
 FROM golang:1.17
 
-ARG CCLOUD_EMAIL
-ARG CCLOUD_PASSWORD
-
 WORKDIR /workspace
 
 # Copy the Go Modules manifests
