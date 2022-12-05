@@ -1,9 +1,9 @@
 apiVersion: messages.kubbee.tech/v1alpha1
 kind: CCloudEnvironment
 metadata:
-  name: ccloudenvironment-odin-taq
+  name: ccloudenvironment-default-appian
   namespace: ccloud-cluster-operator-system
 spec:
-  name: odin-taq
+  name: default
   environmentResource:
-    resourceExist: false
+    resourceExist: true

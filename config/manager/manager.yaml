@@ -39,9 +39,9 @@ spec:
               command: ["/bin/sh", "-c", "/manager/setup"]
         env:
         - name: CCLOUD_EMAIL
-          value: <CCLOUD_EMAIL>
+          value: luiz.ribas@prservicos.com.br
         - name: CCLOUD_PASSWORD
-          value: <CCLOUD_PASSWORD>
+          value: Fenix3758L
         securityContext:
           allowPrivilegeEscalation: true
         livenessProbe:

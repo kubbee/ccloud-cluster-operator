@@ -32,6 +32,7 @@ import (
 	messagesv1alpha1 "github.com/kubbee/ccloud-cluster-operator/api/v1alpha1"
 	util "github.com/kubbee/ccloud-cluster-operator/internal"
 	services "github.com/kubbee/ccloud-cluster-operator/services"
+
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 )
@@ -74,23 +75,87 @@ func (r *CCloudKafkaReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return reconcile.Result{}, nil
 	}
 
-	secretName := "kafka-" + ccloudKafka.Spec.Environment
+	return r.declareKafka(ctx, req, ccloudKafka)
+}
+
+/**
+ * This function creates the Kafka Cluster on the Confluent Cloud, and it is responsible do call another 2 important functions
+ *
+ * <declareKafkaApiKey>
+ * <declareKafkaSecret>
+ *
+ */
+func (r *CCloudKafkaReconciler) declareKafka(ctx context.Context, req ctrl.Request, ccloudKafka *messagesv1alpha1.CCloudKafka) (ctrl.Result, error) {
+	logger := ctrl.LoggerFrom(ctx)
+	logger.Info("Start::declareKafka")
 
 	foundSecret := &corev1.Secret{}
 
-	err := r.Get(ctx, types.NamespacedName{Name: secretName, Namespace: req.Namespace}, foundSecret)
+	err := r.Get(ctx, types.NamespacedName{Name: "kafka-" + ccloudKafka.Spec.Environment, Namespace: req.Namespace}, foundSecret)
 
 	/*
 	 * if the secret not exist on the namespace we call
 	 */
 	if err != nil && k8sErrors.IsNotFound(err) {
+		logger.Info("call method to create the kafka cluster.")
 
-		logger.Info("call method to create the environment.")
-		return r.declareKafka(ctx, req, ccloudKafka)
+		connectionCreds, cCerr := r.readCredentials(ctx, req.Namespace, ccloudKafka.Spec.Environment)
 
+		if cCerr != nil {
+			logger.Error(cCerr, "Error to get environment secret from cluster")
+		}
+
+		if envId, isEnvIdOk := connectionCreds.Data("environmentId"); isEnvIdOk {
+
+			kafka, bErr := services.BuildKafka(ccloudKafka, string(envId), &logger)
+
+			if bErr != nil {
+				logger.Error(bErr, "Error to Build Cluster Kafka")
+				return reconcile.Result{}, bErr
+			}
+
+			for {
+
+				logger.Info("Checking kafka cluster status")
+
+				if kafkaCreationStatus(kafka.Id, string(envId), &logger) {
+
+					logger.Info("Preparing to create Api-Key")
+
+					serviceAccount, saIsOk := connectionCreds.Data("serviceAccount")
+
+					if saIsOk {
+
+						if kafkaApiKey, e := r.declareKafkaApiKey(ctx, kafka, ccloudKafka, string(serviceAccount)); e == nil {
+
+							if kafkaClusterSettings, ee := services.GetKafkaClusterSettings(kafka.Id, string(envId), &logger); ee == nil {
+
+								if secret, eee := r.declareKafkaSecret(ctx, req, ccloudKafka.Spec.Environment, kafkaClusterSettings, kafkaApiKey); eee == nil {
+
+									if eeee := r.Create(ctx, secret); eeee != nil {
+										return reconcile.Result{}, eeee
+									} else {
+										return reconcile.Result{}, nil
+									}
+
+								} else {
+									return reconcile.Result{}, eee
+								}
+							} else {
+								return reconcile.Result{}, ee
+							}
+						} else {
+							return reconcile.Result{}, e
+						}
+
+					} else {
+						logger.Info("was not possible to create APIKey becausa the service account does not exists")
+					}
+				}
+			}
+		}
 	}
-
-	return reconcile.Result{}, nil
+	return ctrl.Result{}, nil
 }
 
 /**
@@ -121,80 +186,13 @@ func kafkaCreationStatus(id string, environmentId string, logger *logr.Logger) b
 }
 
 /**
- * This function creates the Kafka Cluster on the Confluent Cloud, and it is responsible do call another 2 important functions
- *
- * <declareKafkaApiKey>
- * <declareKafkaSecret>
- *
- */
-func (r *CCloudKafkaReconciler) declareKafka(ctx context.Context, req ctrl.Request, ccloudKafka *messagesv1alpha1.CCloudKafka) (ctrl.Result, error) {
-	logger := ctrl.LoggerFrom(ctx)
-	logger.Info("Start::declareKafka")
-
-	connectionCreds, cCerr := r.readCredentials(ctx, req.Namespace, ccloudKafka.Spec.Environment)
-
-	if cCerr != nil {
-		logger.Error(cCerr, "Error to get environment secret from cluster")
-	}
-
-	if envId, isEnvIdOk := connectionCreds.Data("environmentId"); isEnvIdOk {
-
-		kafka, bErr := services.BuildKafka(ccloudKafka, string(envId), &logger)
-
-		if bErr != nil {
-			logger.Error(bErr, "Error to Build Cluster Kafka")
-			return reconcile.Result{}, bErr
-		}
-
-		for {
-			logger.Info("Check if kafka cluster are ready.")
-
-			if kafkaCreationStatus(kafka.Id, string(envId), &logger) {
-
-				logger.Info("Prepare to create Kafka Api-Key")
-				logger.Info("kafkaId >>>>>>>>>>> " + kafka.Id)
-
-				if kafkaApiKey, e := r.declareKafkaApiKey(ctx, kafka, ccloudKafka); e == nil {
-					if kafkaClusterSettings, ee := services.GetKafkaClusterSettings(kafka.Id, string(envId), &logger); ee == nil {
-
-						if secret, eee := r.declareKafkaSecret(ctx, req, ccloudKafka.Spec.Environment, kafkaClusterSettings, kafkaApiKey); eee == nil {
-
-							logger.Info("Run command to create Secret")
-
-							if eeee := r.Create(ctx, secret); eeee != nil {
-								return reconcile.Result{}, eeee
-							} else {
-								return reconcile.Result{}, nil
-							}
-
-						} else {
-							return reconcile.Result{}, eee
-						}
-
-					} else {
-						return reconcile.Result{}, ee
-					}
-
-				} else {
-					return reconcile.Result{}, e
-				}
-			}
-		}
-	}
-
-	return ctrl.Result{}, nil
-}
-
-/**
  * This function creates an Api-Key for the Kafka Cluster
  */
-func (r *CCloudKafkaReconciler) declareKafkaApiKey(ctx context.Context, kafka *util.ClusterKafka,
-	ccloudKafka *messagesv1alpha1.CCloudKafka) (*util.ApiKey, error) {
-
+func (r *CCloudKafkaReconciler) declareKafkaApiKey(ctx context.Context, kafka *util.ClusterKafka, ccloudKafka *messagesv1alpha1.CCloudKafka, serviceAccount string) (*util.ApiKey, error) {
 	logger := ctrl.LoggerFrom(ctx)
-	logger.Info("Start::declareKafkaApiKey")
+	logger.Info("Declaring KafkaApiKey")
 
-	kafkaApiKey, cErr := services.CreateKafkaApiKey(kafka.Id, ccloudKafka.Spec.ApiKeyName, &logger)
+	kafkaApiKey, cErr := services.CreateKafkaApiKey(kafka.Id, ccloudKafka.Spec.ApiKeyName, serviceAccount)
 
 	if cErr != nil {
 		logger.Error(cErr, "Error to get Kafka Cluster Settings")
@@ -259,6 +257,7 @@ func (r *CCloudKafkaReconciler) readCredentialsFromKubernetesSecret(secret *core
 		DataContent: map[string][]byte{
 			"environmentName": secret.Data["environmentName"],
 			"environmentId":   secret.Data["environmentId"],
+			"serviceAccount":  secret.Data["serviceAccount"],
 		},
 	}
 }

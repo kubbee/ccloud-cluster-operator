@@ -40,3 +40,16 @@ type ApiKey struct {
 	Api    string `json:"key"`
 	Secret string `json:"secret"`
 }
+
+/*
+ *{
+ *  "id": "sa-xmvjm1",
+ *  "name": "CadastralServiceAccount",
+ *  "description": "This is a text"
+ *}
+ */
+type ServiceAccount struct {
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}

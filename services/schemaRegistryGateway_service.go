@@ -10,9 +10,8 @@ import (
  *
  */
 func BuildSechameRegistry(ccloudSR *messagesv1alpha1.CCloudSchemaRegistry, environmentId string, logger *logr.Logger) (*util.SchemaRegistry, error) {
-
-	logger.Info("Start::BuildKafka")
-	if setEnvironment(environmentId, logger) {
+	logger.Info("Building schema registry")
+	if setEnvironment(environmentId) {
 		if ccloudSR.Spec.CCloudSchemaRegistryResource.ResourceExist {
 			return getSechameRegistry(environmentId, logger)
 		} else {
@@ -28,6 +27,7 @@ func BuildSechameRegistry(ccloudSR *messagesv1alpha1.CCloudSchemaRegistry, envir
  *
  */
 func createSechameRegistry(ccloudSR *messagesv1alpha1.CCloudSchemaRegistry, environmentId string, logger *logr.Logger) (*util.SchemaRegistry, error) {
+	logger.Info("Creating schema registry")
 	return newSR(ccloudSR.Spec.Cloud, ccloudSR.Spec.Geo, environmentId, logger)
 }
 
@@ -35,12 +35,13 @@ func createSechameRegistry(ccloudSR *messagesv1alpha1.CCloudSchemaRegistry, envi
  *
  */
 func getSechameRegistry(environmentId string, logger *logr.Logger) (*util.SchemaRegistry, error) {
+	logger.Info("Getting schema registry")
 	return getSR(environmentId, logger)
 }
 
 /*
  *
  */
-func CreateSRApiKey(sr *util.SchemaRegistry, apiKeyName string, logger *logr.Logger) (*util.ApiKey, error) {
-	return newSRApiKey(sr.Id, apiKeyName, logger)
+func CreateSRApiKey(sr *util.SchemaRegistry, apiKeyName string, serviceAccount string) (*util.ApiKey, error) {
+	return newSRApiKey(sr.Id, apiKeyName, serviceAccount)
 }

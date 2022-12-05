@@ -16,8 +16,8 @@ func BuildEnvironment(ccloudEnvironment *messagesv1alpha1.CCloudEnvironment, log
 }
 
 func createEnvironment(ccloudEnvironment *messagesv1alpha1.CCloudEnvironment, logger *logr.Logger) (*util.Environment, error) {
-	if environment, e := newEnvironment(ccloudEnvironment.Spec.Name, logger); e == nil {
-		if setEnvironment(environment.Id, logger) {
+	if environment, e := newEnvironment(ccloudEnvironment.Spec.Name); e == nil {
+		if setEnvironment(environment.Id) {
 			logger.Info("The environment was selected with sucess")
 		}
 		return environment, nil
@@ -27,8 +27,8 @@ func createEnvironment(ccloudEnvironment *messagesv1alpha1.CCloudEnvironment, lo
 }
 
 func getEnvironment(ccloudEnvironment *messagesv1alpha1.CCloudEnvironment, logger *logr.Logger) (*util.Environment, error) {
-	if environment, e := findEnviroment(ccloudEnvironment.Spec.Name, logger); e == nil {
-		if setEnvironment(environment.Id, logger) {
+	if environment, e := findEnviroment(ccloudEnvironment.Spec.Name); e == nil {
+		if setEnvironment(environment.Id) {
 			logger.Info("The environment was selected with sucess")
 		}
 		return environment, nil

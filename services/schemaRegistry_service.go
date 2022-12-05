@@ -71,16 +71,13 @@ func getSR(environmentId string, logger *logr.Logger) (*util.SchemaRegistry, err
 }
 
 // this function creates a new Schema Registry Api Key
-func newSRApiKey(schemaRegistryId string, apiKeyName string, logger *logr.Logger) (*util.ApiKey, error) {
-	logger.Info("Start::newSRApiKey")
-
-	cmd := exec.Command("/bin/confluent", "api-key", "create", "--resource", schemaRegistryId, "--description", apiKeyName, "--output", "json")
+func newSRApiKey(schemaRegistryId string, apiKeyName string, serviceAccount string) (*util.ApiKey, error) {
+	cmd := exec.Command("/bin/confluent", "api-key", "create", "--resource", schemaRegistryId, "--description", apiKeyName, "--service-account", serviceAccount, "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "error to create the SR api-key for the application")
 		return &util.ApiKey{}, err
 	} else {
 

@@ -8,8 +8,8 @@ import (
 )
 
 func BuildKafka(kafka *messagesv1alpha1.CCloudKafka, environmentId string, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::BuildKafka")
-	if setEnvironment(environmentId, logger) {
+	logger.Info("Building kafka cluster.")
+	if setEnvironment(environmentId) {
 		if kafka.Spec.CCloudKafkaResource.ResourceExist {
 			return getKafka(kafka, logger)
 		} else {
@@ -21,15 +21,14 @@ func BuildKafka(kafka *messagesv1alpha1.CCloudKafka, environmentId string, logge
 	}
 }
 
-func CreateKafkaApiKey(clusterId string, description string, logger *logr.Logger) (*util.ApiKey, error) {
-	return newKafkaApiKey(clusterId, description, logger)
+func CreateKafkaApiKey(clusterId string, description string, serviceAccount string) (*util.ApiKey, error) {
+	return newKafkaApiKey(clusterId, description, serviceAccount)
 }
 
 func GetKafkaClusterSettings(clusterId string, environmentId string, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::GetKafkaClusterSettings")
-	logger.Info("ClusterId >>>> " + clusterId)
-	if setEnvironment(environmentId, logger) {
-		return findKafkaClusterSettings(clusterId, logger)
+	logger.Info("Getting kafka cluster settings for ClusterId=" + clusterId)
+	if setEnvironment(environmentId) {
+		return findKafkaClusterSettings(clusterId)
 	} else {
 		logger.Info("Was not possible select the environment check the name.")
 		return &util.ClusterKafka{}, nil
@@ -37,11 +36,11 @@ func GetKafkaClusterSettings(clusterId string, environmentId string, logger *log
 }
 
 func createKafka(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::createKafka")
-	return newKafka(kafka, logger)
+	logger.Info("Creating kafka cluster")
+	return newKafka(kafka)
 }
 
 func getKafka(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::getKafka")
-	return findKafka(kafka.Spec.ClusterName, logger)
+	logger.Info("Finding kafka cluster")
+	return findKafka(kafka.Spec.ClusterName)
 }

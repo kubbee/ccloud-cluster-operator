@@ -1,17 +1,17 @@
 apiVersion: messages.kubbee.tech/v1alpha1
 kind: CCloudKafka
 metadata:
-  name: ccloudkafka-odin-taq
+  name: ccloudkafka-default-appian
   namespace: ccloud-cluster-operator-system
 spec:
-  clusterName: taq
+  clusterName: cluster_appian
   cloud: aws
   region: us-east-1
   availability: single-zone
   clusterType: basic
-  environment: odin-taq
-  apiKeyName: taq
+  environment: default
+  apiKeyName: appian
   ccloudKafkaDedicate:
     dedicated: false
   kafkaResource:
-    resourceExist: false
+    resourceExist: true

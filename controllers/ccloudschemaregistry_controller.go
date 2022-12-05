@@ -118,14 +118,18 @@ func (r *CCloudSchemaRegistryReconciler) declareSchemaRegistry(ctx context.Conte
 			return reconcile.Result{}, nil
 		}
 
-		if apiKey, ee := r.declareSRApiKey(ctx, req, ccloudSR.Spec.ApiKeyName, sr); ee == nil {
-			if secret, eee := r.delcareSRSecret(ctx, req, ccloudSR.Spec.Environment, sr, apiKey); eee == nil {
-				r.Create(ctx, secret)
+		serviceAccount, saIsOk := connectionCreds.Data("serviceAccount")
+
+		if saIsOk {
+			if apiKey, ee := r.declareSRApiKey(ctx, req, ccloudSR.Spec.ApiKeyName, sr, string(serviceAccount)); ee == nil {
+				if secret, eee := r.delcareSRSecret(ctx, req, ccloudSR.Spec.Environment, sr, apiKey); eee == nil {
+					r.Create(ctx, secret)
+				} else {
+					return reconcile.Result{}, eee
+				}
 			} else {
-				return reconcile.Result{}, eee
+				return reconcile.Result{}, ee
 			}
-		} else {
-			return reconcile.Result{}, ee
 		}
 	}
 
@@ -135,7 +139,7 @@ func (r *CCloudSchemaRegistryReconciler) declareSchemaRegistry(ctx context.Conte
 /**
  * This function is responsible to create an Api-Key for the Schema Registry
  */
-func (r *CCloudSchemaRegistryReconciler) declareSRApiKey(ctx context.Context, req ctrl.Request, apiKeyName string, schemaRegistry *util.SchemaRegistry) (*util.ApiKey, error) {
+func (r *CCloudSchemaRegistryReconciler) declareSRApiKey(ctx context.Context, req ctrl.Request, apiKeyName string, schemaRegistry *util.SchemaRegistry, serviceAccount string) (*util.ApiKey, error) {
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("Start::declareSchemaRegistry")
 
@@ -143,7 +147,7 @@ func (r *CCloudSchemaRegistryReconciler) declareSRApiKey(ctx context.Context, re
 		return &util.ApiKey{}, errors.New("SchemaRegistry no content")
 	}
 
-	apiKey, err := services.CreateSRApiKey(schemaRegistry, apiKeyName, &logger)
+	apiKey, err := services.CreateSRApiKey(schemaRegistry, apiKeyName, serviceAccount)
 
 	if err != nil {
 		logger.Error(err, "Error to create SchemaRegistry ApiKey")
@@ -210,6 +214,7 @@ func (r *CCloudSchemaRegistryReconciler) readCredentialsFromKubernetesSecret(sec
 		DataContent: map[string][]byte{
 			"environmentName": secret.Data["environmentName"],
 			"environmentId":   secret.Data["environmentId"],
+			"serviceAccount":  secret.Data["serviceAccount"],
 		},
 	}
 }

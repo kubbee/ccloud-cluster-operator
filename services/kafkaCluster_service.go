@@ -6,30 +6,26 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/go-logr/logr"
 	messagesv1alpha1 "github.com/kubbee/ccloud-cluster-operator/api/v1alpha1"
 	util "github.com/kubbee/ccloud-cluster-operator/internal"
 )
 
-func newKafka(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) (*util.ClusterKafka, error) {
+func newKafka(kafka *messagesv1alpha1.CCloudKafka) (*util.ClusterKafka, error) {
 	//  confluent kafka cluster create lion  --cloud aws --region us-east-1 --availability single-zone --type basic
-	logger.Info("Start::newKafka")
 
-	if id, err := selectKafka(kafka.Spec.ClusterName, logger); err != nil {
-		logger.Error(err, "error to find kafka cluster")
+	if id, err := selectKafka(kafka.Spec.ClusterName); err != nil {
 		return &util.ClusterKafka{}, err
 	} else {
 		if id != "" {
-			return findKafka(id, logger)
+			return findKafka(id)
 		} else {
 
-			cmd := newKafkaClusterType(kafka, logger)
+			cmd := newKafkaClusterType(kafka)
 
 			cmdOutput := &bytes.Buffer{}
 			cmd.Stdout = cmdOutput
 
 			if err := cmd.Run(); err != nil {
-				logger.Error(err, "Error to create kafka cluster")
 				return &util.ClusterKafka{}, err
 			} else {
 
@@ -39,7 +35,7 @@ func newKafka(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) (*util.C
 				clusterKafka := &util.ClusterKafka{}
 
 				if jErr := json.Unmarshal([]byte(message), clusterKafka); jErr != nil {
-					logger.Error(jErr, "Error to parse Cluster Kafka")
+					return &util.ClusterKafka{}, jErr
 				}
 
 				return clusterKafka, nil
@@ -48,35 +44,22 @@ func newKafka(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) (*util.C
 	}
 }
 
-func newKafkaClusterType(kafka *messagesv1alpha1.CCloudKafka, logger *logr.Logger) *exec.Cmd {
-	logger.Info("Start::newKafkaType")
+func newKafkaClusterType(kafka *messagesv1alpha1.CCloudKafka) *exec.Cmd {
 	if kafka.Spec.CCloudKafkaDedicate.Dedicated {
-		logger.Info("Cluster Type Dedicated")
-
 		ckus := strconv.FormatInt(kafka.Spec.CCloudKafkaDedicate.CKU, 10)
-
-		logger.Info("command,  /bin/confluent kafka cluster create " + kafka.Spec.ClusterName + " --cloud " + kafka.Spec.Cloud + " --region " + kafka.Spec.Region + " --availability " + kafka.Spec.Availability + " --cku " + ckus + " --type " + kafka.Spec.ClusterType + " --output json")
-
 		return exec.Command("/bin/confluent", "kafka", "cluster", "create", kafka.Spec.ClusterName, "--cloud", kafka.Spec.Cloud, "--region", kafka.Spec.Region, "--availability", kafka.Spec.Availability, "--cku", ckus, "--type", kafka.Spec.ClusterType, "--output", "json")
 	} else {
-		logger.Info("Cluster Type Normal")
-		logger.Info("command,  /bin/confluent kafka cluster create " + kafka.Spec.ClusterName + " --cloud " + kafka.Spec.Cloud + " --region " + kafka.Spec.Region + " --availability " + kafka.Spec.Availability + " --type " + kafka.Spec.ClusterType + " --output json")
-
 		return exec.Command("/bin/confluent", "kafka", "cluster", "create", kafka.Spec.ClusterName, "--cloud", kafka.Spec.Cloud, "--region", kafka.Spec.Region, "--availability", kafka.Spec.Availability, "--type", kafka.Spec.ClusterType, "--output", "json")
 	}
 }
 
-func findKafka(kafkaClusteName string, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::findKafka")
-	logger.Info("Run::Command::confluent kafka cluster list --output json")
-
+func findKafka(kafkaClusteName string) (*util.ClusterKafka, error) {
 	cmd := exec.Command("/bin/confluent", "kafka", "cluster", "list", "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "Error to get kafka cluster")
 		return &util.ClusterKafka{}, err
 	} else {
 
@@ -88,7 +71,7 @@ func findKafka(kafkaClusteName string, logger *logr.Logger) (*util.ClusterKafka,
 		clusters := []util.ClusterKafka{}
 
 		if jErr := json.Unmarshal([]byte(message), &clusters); jErr != nil {
-			logger.Error(jErr, "Error to parse kafka cluster")
+			return &util.ClusterKafka{}, jErr
 		}
 
 		for i := 0; i < len(clusters); i++ {
@@ -97,14 +80,11 @@ func findKafka(kafkaClusteName string, logger *logr.Logger) (*util.ClusterKafka,
 				break
 			}
 		}
-
-		return findKafkaClusterSettings(clusterId, logger)
+		return findKafkaClusterSettings(clusterId)
 	}
 }
 
-func selectKafka(kafkaClusteName string, logger *logr.Logger) (string, error) {
-	logger.Info("Start::selectKafka")
-	logger.Info("Run::Command::confluent kafka cluster list --output json")
+func selectKafka(kafkaClusteName string) (string, error) {
 
 	cmd := exec.Command("/bin/confluent", "kafka", "cluster", "list", "--output", "json")
 
@@ -112,7 +92,6 @@ func selectKafka(kafkaClusteName string, logger *logr.Logger) (string, error) {
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "Error to get kafka cluster")
 		return "", err
 	} else {
 
@@ -124,7 +103,7 @@ func selectKafka(kafkaClusteName string, logger *logr.Logger) (string, error) {
 		clusters := []util.ClusterKafka{}
 
 		if jErr := json.Unmarshal([]byte(message), &clusters); jErr != nil {
-			logger.Error(jErr, "Error to parse kafka cluster")
+			return "", jErr
 		}
 
 		for i := 0; i < len(clusters); i++ {
@@ -138,24 +117,18 @@ func selectKafka(kafkaClusteName string, logger *logr.Logger) (string, error) {
 	}
 }
 
-func findKafkaClusterSettings(clusterId string, logger *logr.Logger) (*util.ClusterKafka, error) {
-	logger.Info("Start::getKafkaClusterSettings")
-	logger.Info("command:: /bin/confluent kafka cluster use " + clusterId)
-
+func findKafkaClusterSettings(clusterId string) (*util.ClusterKafka, error) {
 	cmdUse := exec.Command("/bin/confluent", "kafka", "cluster", "use", clusterId)
 
 	if err := cmdUse.Run(); err != nil {
-		logger.Error(err, "error to use Kafka Cluster")
 		return &util.ClusterKafka{}, err
 	} else {
-
 		cmd := exec.Command("/bin/confluent", "kafka", "cluster", "describe", "--output", "json")
 
 		cmdOutput := &bytes.Buffer{}
 		cmd.Stdout = cmdOutput
 
 		if err := cmd.Run(); err != nil {
-			logger.Error(err, "error to get the kafka cluster reference")
 			return &util.ClusterKafka{}, err
 		} else {
 			output := cmdOutput.Bytes()
@@ -164,7 +137,6 @@ func findKafkaClusterSettings(clusterId string, logger *logr.Logger) (*util.Clus
 			cluster := &util.ClusterKafka{}
 
 			if jErr := json.Unmarshal([]byte(message), cluster); jErr != nil {
-				logger.Error(jErr, "error to parse kafka cluster")
 				return &util.ClusterKafka{}, jErr
 			}
 
@@ -173,16 +145,13 @@ func findKafkaClusterSettings(clusterId string, logger *logr.Logger) (*util.Clus
 	}
 }
 
-func newKafkaApiKey(clusterId string, description string, logger *logr.Logger) (*util.ApiKey, error) {
-	logger.Info("Creating Api-Key for Kafka Connection")
-
-	cmd := exec.Command("/bin/confluent", "api-key", "create", "--resource", clusterId, "--description", description, "--output", "json")
+func newKafkaApiKey(clusterId string, description string, serviceAccount string) (*util.ApiKey, error) {
+	cmd := exec.Command("/bin/confluent", "api-key", "create", "--resource", clusterId, "--description", description, "--service-account", serviceAccount, "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "Confluent::NewKafkaApiKey:: Error to create the kafka api-key for the application")
 		return &util.ApiKey{}, err
 	} else {
 
@@ -192,7 +161,6 @@ func newKafkaApiKey(clusterId string, description string, logger *logr.Logger) (
 		kafkaApiKey := &util.ApiKey{}
 
 		if jErr := json.Unmarshal([]byte(message), kafkaApiKey); jErr != nil {
-			logger.Error(jErr, "Error to parse Kafka ApiKey")
 			return &util.ApiKey{}, jErr
 		}
 

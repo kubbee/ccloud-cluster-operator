@@ -1,12 +1,12 @@
 apiVersion: messages.kubbee.tech/v1alpha1
 kind: CCloudSchemaRegistry
 metadata:
-  name: ccloudschemaregistry-odin-taq
+  name: ccloudschemaregistry-default-appian
   namespace: ccloud-cluster-operator-system 
 spec:
   cloud: aws
   geo: us
-  environment: odin-taq
-  apiKeyName: taq
+  environment: default
+  apiKeyName: appian
   schemaRegistryResource:
-    resourceExist: false
+    resourceExist: true

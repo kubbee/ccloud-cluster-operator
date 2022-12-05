@@ -35,8 +35,8 @@ type CCloudKafkaSpec struct {
 	ClusterType         string              `json:"clusterType,omitempty"`  // --type string             Type of the Kafka cluster. Allowed values: basic, standard, dedicated. (default "basic")
 	Environment         string              `json:"environment,omitempty"`
 	ApiKeyName          string              `json:"apiKeyName,omitempty"`
-	CCloudKafkaDedicate CCloudKafkaDedicate `json:"ccloudKafkaDedicate,omitempty"`
-	CCloudKafkaResource CCloudKafkaResource `json:"kafkaResource,omitempty"`
+	CCloudKafkaDedicate CCloudKafkaDedicate `json:"ccloudKafkaDedicate"`
+	CCloudKafkaResource CCloudKafkaResource `json:"kafkaResource"`
 }
 
 type CCloudKafkaResource struct {

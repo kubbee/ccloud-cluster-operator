@@ -98,30 +98,32 @@ func (r *CCloudEnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Re
 func (r *CCloudEnvironmentReconciler) declareEnvironment(ctx context.Context, req ctrl.Request, environment *messagesv1alpha1.CCloudEnvironment) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
 
-	if environment, err := services.BuildEnvironment(environment, &logger); err != nil {
+	if env, err := services.BuildEnvironment(environment, &logger); err != nil {
 		logger.Error(err, "Error to create environment")
 		return reconcile.Result{}, err
 	} else {
 
-		secret, _ := r.declareEnvironmentSecret(ctx, req, environment)
-		err := r.Create(ctx, secret)
+		sa, err := r.declareServiceAccountForEnvironment(ctx, req, environment)
 
-		//
 		if err != nil {
-			logger.Error(err, "error to create environment secret")
-			return reconcile.Result{}, nil
+			logger.Error(err, "was not possible create service account")
 		}
 
-		return reconcile.Result{}, nil
+		secret := r.declareEnvironmentSecret(req, env, sa)
+
+		if err := r.Create(ctx, secret); err != nil {
+			logger.Error(err, "error to create environment secret")
+			return reconcile.Result{}, nil
+		} else {
+			return reconcile.Result{}, nil
+		}
 	}
 }
 
 /**
  * This function creates an secret environment on the namespace
  */
-func (r *CCloudEnvironmentReconciler) declareEnvironmentSecret(ctx context.Context, req ctrl.Request, environment *util.Environment) (*corev1.Secret, error) {
-	logger := ctrl.LoggerFrom(ctx)
-	logger.Info("Start::declareEnvironmentSecret")
+func (r *CCloudEnvironmentReconciler) declareEnvironmentSecret(req ctrl.Request, environment *util.Environment, sa *util.ServiceAccount) *corev1.Secret {
 
 	var labels = make(map[string]string)
 	labels["name"] = environment.Name
@@ -138,9 +140,19 @@ func (r *CCloudEnvironmentReconciler) declareEnvironmentSecret(ctx context.Conte
 			Labels:    labels,
 		},
 		Type:      "kubbee.tech/secret",
-		Data:      map[string][]byte{"environmentName": []byte(environment.Name), "environmentId": []byte(environment.Id)},
+		Data:      map[string][]byte{"environmentName": []byte(environment.Name), "environmentId": []byte(environment.Id), "serviceAccount": []byte(sa.Id)},
 		Immutable: &immutable,
-	}, nil
+	}
+}
+
+/**
+ * This function declare a Service Account with the same name of environment
+ */
+func (r *CCloudEnvironmentReconciler) declareServiceAccountForEnvironment(ctx context.Context, req ctrl.Request, environment *messagesv1alpha1.CCloudEnvironment) (*util.ServiceAccount, error) {
+	logger := ctrl.LoggerFrom(ctx)
+	logger.Info("Declaring Service Account for environment " + environment.Name)
+
+	return services.CreateServiceAccount(environment.Name, environment.Namespace+"-"+environment.Name)
 }
 
 // SetupWithManager sets up the controller with the Manager.

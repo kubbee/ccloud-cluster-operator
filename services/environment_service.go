@@ -5,20 +5,16 @@ import (
 	"encoding/json"
 	"os/exec"
 
-	"github.com/go-logr/logr"
 	util "github.com/kubbee/ccloud-cluster-operator/internal"
 )
 
-func newEnvironment(environmentName string, logger *logr.Logger) (*util.Environment, error) {
-	logger.Info("Start::NewConfluentEnvironment")
-
+func newEnvironment(environmentName string) (*util.Environment, error) {
 	cmd := exec.Command("/bin/confluent", "environment", "create", environmentName, "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "error to create environment")
 		return &util.Environment{}, err
 	} else {
 		output := cmdOutput.Bytes()
@@ -27,7 +23,6 @@ func newEnvironment(environmentName string, logger *logr.Logger) (*util.Environm
 		env := &util.Environment{}
 
 		if err := json.Unmarshal([]byte(message), env); err != nil {
-			logger.Error(err, "error to parse the environment json to struct")
 			return &util.Environment{}, err
 		}
 
@@ -35,15 +30,13 @@ func newEnvironment(environmentName string, logger *logr.Logger) (*util.Environm
 	}
 }
 
-func findEnviroment(environmentName string, logger *logr.Logger) (*util.Environment, error) {
-	logger.Info("Start::getEnvironment")
+func findEnviroment(environmentName string) (*util.Environment, error) {
 	cmd := exec.Command("/bin/confluent", "environment", "list", "--output", "json")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "Error to retrive clonfluent cloud environments")
 		return &util.Environment{}, err
 	} else {
 		output := cmdOutput.Bytes()
@@ -52,7 +45,6 @@ func findEnviroment(environmentName string, logger *logr.Logger) (*util.Environm
 		environments := []util.Environment{}
 
 		if err := json.Unmarshal([]byte(message), &environments); err != nil {
-			logger.Error(err, "error to parse environment json to struct")
 			return &util.Environment{}, err
 		}
 
@@ -70,14 +62,10 @@ func findEnviroment(environmentName string, logger *logr.Logger) (*util.Environm
 	}
 }
 
-func setEnvironment(environmentId string, logger *logr.Logger) bool {
-	logger.Info("Start::setEnvironment")
-	logger.Info("environemtId >> " + environmentId)
-
+func setEnvironment(environmentId string) bool {
 	cmd := exec.Command("/bin/confluent", "environment", "use", environmentId)
 
 	if err := cmd.Run(); err != nil {
-		logger.Error(err, "error was not possible select the environment")
 		return false
 	}
 

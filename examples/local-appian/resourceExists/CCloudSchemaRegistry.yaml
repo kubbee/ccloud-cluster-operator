@@ -1,12 +1,11 @@
 apiVersion: messages.kubbee.tech/v1alpha1
 kind: CCloudSchemaRegistry
 metadata:
-  name: ccloudschemaregistry-odin-taq
-  namespace: ccloud-cluster-operator-system 
+  name: ccloudschemaregistry-sample
 spec:
   cloud: aws
   geo: us
-  environment: odin-taq
-  apiKeyName: taq
+  environment: teklon
+  apiKeyName: teklon
   schemaRegistryResource:
     resourceExist: false
